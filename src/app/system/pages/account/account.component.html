@@ -1,0 +1,167 @@
+<div class="fc fp" *ngIf="user" style="box-sizing: border-box; padding: 14px">
+
+    <div class="fc" style="margin: auto">
+        <div class="fr fw" *ngIf="isVisible.account">
+            <div style="margin: auto; padding: 4px">
+                <mat-card style="margin: auto; width: 375px">
+                    <mat-card-title style="margin-bottom: 18px">
+                        {{(_authenticationService.users.current ? "Edit Account" : "Sign into Magnecor")}}
+                    </mat-card-title>
+                    <mat-card-content>
+                        <div class="fr">
+                            <div class="fc" *ngIf="!_authenticationService.users.current" style="margin-right: 18px">
+                                <mat-button-toggle-group [(ngModel)]="isUserProvision"
+                                    (ngModelChange)="resetProvisionaryUser()" style="margin: auto" vertical>
+                                    <mat-button-toggle [value]="true">Create Account</mat-button-toggle>
+                                    <mat-button-toggle [value]="false">Sign In</mat-button-toggle>
+                                </mat-button-toggle-group>
+                            </div>
+                            <div class="fc fg" *ngIf="(_authenticationService.users.current || isUserProvision)">
+                                <div class="fr">
+                                    <mat-form-field class="fg" style="margin-right: 8px; width: 0">
+                                        <input matInput maxlength="38" [(ngModel)]="user.firstName"
+                                            placeholder="First Name">
+                                    </mat-form-field>
+                                    <mat-form-field class="fg" style="width: 0">
+                                        <input matInput maxlength="38" [(ngModel)]="user.lastName"
+                                            placeholder="Last Name">
+                                    </mat-form-field>
+                                </div>
+                                <mat-form-field>
+                                    <input matInput maxlength="50" [(ngModel)]="user.emailAddress"
+                                        placeholder="Email Address" type="email">
+                                </mat-form-field>
+                                <mat-form-field style="margin-bottom: 18px">
+                                    <input matInput maxlength="25" [(ngModel)]="user.phoneNumber"
+                                        placeholder="Phone Number" type="tel">
+                                </mat-form-field>
+                                <mat-form-field>
+                                    <input matInput maxlength="50" [(ngModel)]="user.address.street"
+                                        placeholder="Street">
+                                </mat-form-field>
+                                <div class="fr" style="margin-bottom: 18px">
+                                    <mat-form-field class="fg" style="margin-right: 8px; width: 0">
+                                        <input matInput maxlength="50" [(ngModel)]="user.address.city"
+                                            placeholder="City">
+                                    </mat-form-field>
+                                    <mat-form-field class="fg" style="margin-right: 8px; width: 0">
+                                        <mat-select [(ngModel)]="user.address.stateID" placeholder="State">
+                                            <mat-option *ngFor="let state of _shellService.states" [value]="state.ID">
+                                                {{state.stateName}}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                    <mat-form-field class="fg" style="width: 0">
+                                        <input matInput maxlength="10" [(ngModel)]="user.address.zipCode"
+                                            placeholder="ZIP" type="tel">
+                                    </mat-form-field>
+                                </div>
+                                <mat-form-field>
+                                    <input matInput maxlength="38" [(ngModel)]="user.username" placeholder="Username">
+                                </mat-form-field>
+                                <mat-checkbox *ngIf="_authenticationService.users.current"
+                                    [(ngModel)]="isPasswordChange" style="margin-bottom: 8px">Change Password
+                                </mat-checkbox>
+                                <mat-form-field *ngIf="isPasswordChange">
+                                    <input (keydown.enter)="saveChanges()" matInput maxlength="38"
+                                        [(ngModel)]="user.currentPassword" [placeholder]="((_authenticationService.users.current ? 'New ' : '')
+                             + 'Password')" type="password">
+                                </mat-form-field>
+                                <mat-form-field (keydown.enter)="saveChanges()"
+                                    *ngIf="_authenticationService.users.current">
+                                    <input matInput maxlength="38" [(ngModel)]="user.previousPassword"
+                                        placeholder="Current Password" type="password">
+                                </mat-form-field>
+                                <div class="fr">
+                                    <button (click)="saveUser(true)" color="warn" [disabled]="!(user.firstName && user.lastName && 
+                                    user.emailAddress && user.phoneNumber && user.address.street && user.address.city && user.address.stateID && 
+                                    user.address.zipCode && user.previousPassword && user.username)" mat-raised-button
+                                        *ngIf="_authenticationService.users.current"
+                                        style="flex-grow: 1; margin-right: 8px">Delete
+                                        Account</button>
+                                    <button (click)="saveChanges()" color="primary"
+                                        [disabled]="!((!isPasswordChange || user.currentPassword) && user.firstName && user.lastName && 
+                    user.emailAddress && user.phoneNumber && user.address.street && user.address.city && user.address.stateID && 
+                    user.address.zipCode && (!_authenticationService.users.current || user.previousPassword) && user.username)" mat-raised-button
+                                        style="flex-grow: 1"
+                                        [style.background]="((_shellService.dealer 
+                                        && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : 'light')">
+                                        {{(_authenticationService.users.current ? "Save Changes" : "Create Account")}}</button>
+                                </div>
+                            </div>
+                            <div class="fc fg" *ngIf="(!(_authenticationService.users.current || isUserProvision))">
+                                <mat-form-field>
+                                    <input (keydown.enter)="userLogin()" matInput maxlength="38"
+                                        [(ngModel)]="credentials.username" placeholder="Username">
+                                </mat-form-field>
+                                <mat-form-field>
+                                    <input (keydown.enter)="userLogin()" matInput [(ngModel)]="credentials.password"
+                                        placeholder="Password" type="password">
+                                </mat-form-field>
+                                <!-- <div class="fr" *ngIf="(credentials.username && isVisible.recoveryButton)"
+                                    style="margin-bottom: 8px">
+                                    <button (click)="recoverAccount()" mat-button style="margin: auto 0 auto auto"
+                                        [style.color]="((_shellService.dealer 
+                                    && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : 'red')">Forgot
+                                        Password?</button>
+                                </div> -->
+                                <button (click)="userLogin()" color="primary"
+                                    [disabled]="!(credentials.username && credentials.password)" mat-raised-button
+                                    [style.background]="((_shellService.dealer 
+                                    && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : 'light')">Sign
+                                    In</button>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+            <div style="margin: auto; padding: 4px">
+                <mat-card *ngIf="(_authenticationService.users.current && dictionaries.orderStatuses && orders)"
+                    style="display: flex; flex-direction: column; height: 500px; padding: 0; width: 375px">
+                    <mat-card-title style="margin: 18px">Order History</mat-card-title>
+                    <mat-card-content style="flex-grow: 1; overflow-y: auto">
+                        <div class="fc fp">
+                            <mat-card *ngFor="let order of orders" style="margin: 8px 18px">
+                                <div class="fr">
+                                    <div class="fg"><a [routerLink]="('/calculator/' + order.GUID)">{{order.ID}}</a>
+                                    </div>
+                                    <div>{{dictionaries.orderStatuses[order.statusID].statusName}}</div>
+                                </div>
+                            </mat-card>
+                            <div *ngIf="!orders.length" style="margin: auto">
+                                There are no orders to display.
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+        <div class="fc" *ngIf="isVisible.recovery">
+            <mat-card style="margin: auto; width: 375px">
+                <mat-card-title style="margin-bottom: 18px">
+                    Reset Password
+                </mat-card-title>
+                <mat-card-content>
+                    <div class="fc">
+                        <mat-form-field style="margin-bottom: 8px">
+                            <input matInput maxlength="38" [(ngModel)]="recoveredAccount.password"
+                                placeholder="New Password" type="password">
+                        </mat-form-field>
+                        <mat-form-field style="margin-bottom: 18px">
+                            <input matInput maxlength="38" [(ngModel)]="recoveredAccount.confirmedPassword"
+                                placeholder="Confirm Password" type="password">
+                        </mat-form-field>
+                        <div class="fr">
+                            <button (click)="saveUser(true)" color="primary"
+                                [disabled]="!(recoveredAccount.confirmedPassword && recoveredAccount.password)"
+                                mat-raised-button style="flex-grow: 1; margin-right: 8px"
+                                [style.background]="((_shellService.dealer 
+                                && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : 'light')">Save Changes</button>
+                        </div>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </div>
+
+</div>

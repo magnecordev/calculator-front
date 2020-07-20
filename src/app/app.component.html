@@ -1,0 +1,33 @@
+<div class="fc fp">
+  <div class="fr" style="box-sizing: border-box; height: 75px; padding: 18px; width: 100%" [style.background]="((_shellService.dealer 
+  && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : '#FA0502')">
+    <div class="fc" style="background: #FFF; box-sizing: border-box; height: 39px; margin: auto 0; padding: 8px">
+      <img (click)="_shellService._router.navigateByUrl('/calculator')" src="../../../assets/logo.png"
+        style="cursor: pointer; height: 100%">
+    </div>
+    <div class="fg">
+      <div class="fr" style="margin: auto 0 auto auto">
+        <input matInput (keydown.enter)="getOrderFromGUID()" [(ngModel)]="_shellService.orderGUID"
+          placeholder="Search (Order UID)"
+          style="background: #FFF; border-radius: 5px; margin: auto 8px auto auto; padding: 8px" type="search">
+        <button mat-button [matMenuTriggerFor]="accountMenu" style="color: #FFF">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+        <mat-menu #accountMenu="matMenu">
+          <ng-container *ngIf="_authenticationService.users.current">
+            <button (click)="_shellService._router.navigateByUrl('/account')" mat-menu-item>My Account</button>
+            <button (click)="_authenticationService.signOut()" mat-menu-item>Sign Out</button>
+          </ng-container>
+          <button (click)="_shellService._router.navigateByUrl('/account')" mat-menu-item
+            *ngIf="!_authenticationService.users.current">Sign In</button>
+        </mat-menu>
+      </div>
+    </div>
+  </div>
+  <div class="fc fg" style="overflow-y: auto; width: 100%" [style.background]="((_shellService.dealer && 
+  _shellService.dealer.backgroundColor) ? _shellService.dealer.backgroundColor : '')">
+    <div class="fp" *ngIf="_shellService.states.length">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

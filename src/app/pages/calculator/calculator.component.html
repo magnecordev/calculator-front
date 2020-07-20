@@ -1,0 +1,426 @@
+<div class="fc fp" style="position: relative">
+    <div class="fr"
+        style="background: #000000E0; box-sizing: border-box; padding: 8px 18px; position: absolute; top: 0; width: 100%; z-index: 1">
+        <h3 class="fg" style="color: #FFF; font-weight: bold; margin: auto 0">
+            {{(order.ID ? (dictionaries.orderStatuses ? (dictionaries.orderStatuses[order.statusID].statusName + " #" + order.ID) : "") : "New Quote")}}
+        </h3>
+        <div class="fr fw" style="margin: auto 0">
+            <mat-checkbox [(ngModel)]="isVisible.orderButton" style="margin: auto 8px auto auto">
+                <div style="color: #FFF">I confirm that all items on this order are final selections.</div>
+            </mat-checkbox>
+            <div class="fg fr">
+                <button (click)="saveOrder()" color="light" mat-raised-button style="margin-left: auto">Save as Quote
+                    (Draft)</button>
+                <button (click)="saveOrder(true)" color="primary" mat-raised-button *ngIf="isVisible.orderButton"
+                    style="color: #FFF; margin-left: 8px" [style.background]="((_shellService.dealer 
+            && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : 'red')">Request
+                    Order</button>
+            </div>
+        </div>
+    </div>
+    <div class="fg" style="height: 0; overflow-y: auto">
+        <div class="fc" *ngIf="(isInitialized !== undefined)" style="padding: 75px 18px 18px; width: 100%">
+            <div style="margin-bottom: 18px">
+                <h2>CONTACT INFORMATION</h2>
+                <mat-form-field style="margin-right: 18px; width: 125px">
+                    <input matInput [(ngModel)]="order.firstName" placeholder="First Name">
+                </mat-form-field>
+                <mat-form-field style="width: 125px">
+                    <input matInput [(ngModel)]="order.lastName" placeholder="Last Name">
+                </mat-form-field>
+                <br>
+                <mat-form-field style="margin-right: 18px">
+                    <input matInput [(ngModel)]="order.address.street" placeholder="Street Address">
+                </mat-form-field>
+                <mat-form-field style="margin-right: 18px; width: 125px">
+                    <input matInput [(ngModel)]="order.address.city" placeholder="City">
+                </mat-form-field>
+                <mat-form-field style="margin-right: 18px; width: 150px">
+                    <mat-select [(ngModel)]="order.address.stateID" placeholder="State">
+                        <mat-option *ngFor="let state of _shellService.states" [value]="state.ID">
+                            {{state.stateName}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field style="margin-right: 18px; width: 75px">
+                    <input matInput [(ngModel)]="order.address.zipCode" placeholder="ZIP Code">
+                </mat-form-field>
+                <mat-form-field style="margin-right: 18px">
+                    <input matInput [(ngModel)]="order.phoneNumber" placeholder="Phone Number">
+                </mat-form-field>
+                <mat-form-field>
+                    <input matInput [(ngModel)]="order.emailAddress" placeholder="Email Address">
+                </mat-form-field>
+            </div>
+            <div style="margin-bottom: 18px">
+                <div class="fr">
+                    <h2 style="margin: auto 18px auto 0">ORDER DETAILS</h2>
+                    <mat-checkbox [(ngModel)]="order.isEngineReplacement" style="margin: auto 0">
+                        Engine Replacement
+                    </mat-checkbox>
+                </div>
+                <div style="margin-bottom: 8px">
+                    <mat-form-field style="margin-right: 18px">
+                        <input matInput [(ngModel)]="order.engineSize" placeholder="Engine Size">
+                    </mat-form-field>
+                    <mat-form-field style="margin: auto 18px auto 0; width: 125px">
+                        <input matInput [(ngModel)]="order.engineCode" placeholder="Engine Code">
+                    </mat-form-field>
+                    <mat-button-toggle-group [(ngModel)]="order.isDOHC" style="margin: auto 0">
+                        <mat-button-toggle [value]="false">SOHC</mat-button-toggle>
+                        <mat-button-toggle [value]="true">DOHC</mat-button-toggle>
+                    </mat-button-toggle-group>
+                </div>
+                <div style="margin-bottom: 18px">
+                    <mat-radio-group [(ngModel)]="order.engineTypeID">
+                        <mat-radio-button *ngFor="let engineType of _orderService.engineTypes"
+                            style="margin-right: 18px" [value]="engineType.ID">
+                            {{engineType.engineTypeName}}
+                        </mat-radio-button>
+                    </mat-radio-group>
+                </div>
+                <mat-form-field style="margin-right: 18px; width: 100px">
+                    <input matInput [(ngModel)]="order.cylinderCount" (ngModelChange)="mergeCylinderCount()"
+                        placeholder="Cylinder Count" type="number">
+                </mat-form-field>
+                <mat-form-field style="margin-right: 18px; width: 100px">
+                    <input matInput [(ngModel)]="order.valveCount" placeholder="Valve Count" type="number">
+                </mat-form-field>
+                <mat-form-field style="margin-right: 18px; width: 75px">
+                    <input matInput [(ngModel)]="order.vehicle.make" (ngModelChange)="getCylinderCount()"
+                        placeholder="Make">
+                </mat-form-field>
+                <mat-form-field style="margin-right: 18px; width: 125px">
+                    <input matInput [(ngModel)]="order.vehicle.model" (ngModelChange)="getCylinderCount()"
+                        placeholder="Model">
+                </mat-form-field>
+                <mat-form-field style="width: 75px">
+                    <input matInput [(ngModel)]="order.vehicle.year" (ngModelChange)="getCylinderCount()"
+                        placeholder="Year" type="number">
+                </mat-form-field>
+            </div>
+            <div class="fr" style="margin-bottom: 18px">
+                <div style="margin-right: 18px">
+                    <div class="fr" style="margin-bottom: 8px">
+                        <h2 style="margin: auto 18px auto 0">CABLE TYPE</h2>
+                        <mat-checkbox [(ngModel)]="order.isNumbered" style="margin: auto 0">
+                            Numbered
+                        </mat-checkbox>
+                    </div>
+                    <mat-radio-group class="fc" [(ngModel)]="order.cableTypeID">
+                        <mat-radio-button *ngFor="let cableType of _orderService.cableTypes" style="margin-bottom: 8px"
+                            [value]="cableType.ID">
+                            {{cableType.cableTypeName}}
+                        </mat-radio-button>
+                    </mat-radio-group>
+                </div>
+                <mat-card>
+                    <mat-card-title>Coil Pack Type</mat-card-title>
+                    <mat-card-content>
+                        <div class="fc">
+                            <mat-form-field>
+                                <mat-select [(ngModel)]="order.coilPackTypeID"
+                                    (selectionChange)="mergeCoilPackType(order.coilPackTypeID)">
+                                    <mat-option *ngFor="let coilPackType of _orderService.coilPackTypes"
+                                        [value]="coilPackType.ID">
+                                        {{coilPackType.coilPackName}}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <div class="fr" *ngIf="isVisible.measure" style="margin-top: 8px">
+                                <mat-form-field style="margin-right: 18px; width: 75px">
+                                    <input matInput [(ngModel)]="order.cavityDepth" placeholder="Cavity Depth (mm)"
+                                        type="number">
+                                </mat-form-field>
+                                <mat-form-field style="width: 75px">
+                                    <input matInput [(ngModel)]="order.coilTowerOuterDiameter"
+                                        placeholder="Outer Diameter (mm)" type="number">
+                                </mat-form-field>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+            <div style="margin-bottom: 18px">
+                <h2>PLUG CABLES</h2>
+                <div class="fc">
+                    <ng-container *ngFor="let plugCable of order.plugCables, let i = index">
+                        <div class="fr" *ngIf="!plugCable.isDelete">
+                            <div class="fc fg" style="margin-bottom: 18px; max-width: 750px">
+                                <div class="fr" *ngIf="(plugCable.coilBootID && plugCable.plugBootID)">
+                                    <mat-form-field style="margin: 0 auto; width: 75px">
+                                        <input matInput [(ngModel)]="plugCable.cableLength" placeholder="Length (in)">
+                                    </mat-form-field>
+                                </div>
+                                <div class="fr">
+                                    <div class="fc" *ngIf="plugCable.coilBootID">
+                                        <div class="fr" *ngIf="(plugCable.coilBootID && plugCable.plugBootID)"
+                                            style="margin-bottom: 8px">
+                                            <div class="fg">
+                                            </div>
+                                            <div [ngStyle]="{'width': (((1 - dictionaries.coilBoots.bootIDs[plugCable.coilBootID].wireStartRatio) * 100) + '%')}"
+                                                style="background: #000; height: 3px">
+                                            </div>
+                                        </div>
+                                        <img [src]="('../../../assets/coilBoots/' + plugCable.coilBootID + '.jpg')"
+                                            style="height: 62.5px; margin: auto 0">
+                                    </div>
+                                    <div class="fc" *ngIf="order.cableTypeID" style="width: 100%">
+                                        <div *ngIf="(plugCable.coilBootID && plugCable.plugBootID)"
+                                            style="background: #000; height: 3px; margin-bottom: 8px; width: 100%">
+                                        </div>
+                                        <div [ngStyle]="{'background': dictionaries.cableTypes[order.cableTypeID].color,
+                    'height': ((dictionaries.cableTypes[order.cableTypeID].diameter * 1.75) + 'px')}"
+                                            style="margin: auto 0; width: 100%">
+                                        </div>
+                                    </div>
+                                    <div class="fc" *ngIf="plugCable.plugBootID">
+                                        <div class="fr" *ngIf="(plugCable.coilBootID && plugCable.plugBootID)"
+                                            style="margin-bottom: 8px">
+                                            <div [ngStyle]="{'width': (((1 - dictionaries.plugBoots.bootIDs[plugCable.plugBootID].wireStartRatio) * 100) + '%')}"
+                                                style="background: #000; height: 3px">
+                                            </div>
+                                        </div>
+                                        <img [src]="('../../../assets/plugBoots/' + plugCable.plugBootID + '.jpg')"
+                                            style="height: 62.5px; margin: auto 0; transform: scaleX(-1)">
+                                    </div>
+                                </div>
+                                <div class="fr" *ngIf="(plugCable.coilBootID || plugCable.plugBootID)"
+                                    style="margin-top: 8px">
+                                    <div class="fc fg">
+                                        <div class="fc" *ngIf="plugCable.coilBootID" style="margin: auto auto auto 0">
+                                            <img [src]="('../../../assets/terminals/' + dictionaries.coilBoots.bootIDs[plugCable.coilBootID].terminalID + '.jpg')"
+                                                style="height: 50px">
+                                        </div>
+                                    </div>
+                                    <div class="fc fg">
+                                        <div class="fc" *ngIf="plugCable.plugBootID" style="margin: auto 0 auto auto">
+                                            <img [src]="('../../../assets/terminals/' + dictionaries.plugBoots.bootIDs[plugCable.plugBootID].terminalID + '.jpg')"
+                                                style="height: 50px">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="fr">
+                                    <div class="fg">
+                                        <mat-button-toggle-group (change)="mergeBoot(plugCable)"
+                                            [(ngModel)]="plugCable.coilBootAngle" style="margin: auto 18px auto 0">
+                                            <mat-button-toggle
+                                                *ngFor="let coilBootAngle of dictionaries.coilBoots.angles"
+                                                [value]="coilBootAngle">
+                                                {{(coilBootAngle + "°")}}
+                                            </mat-button-toggle>
+                                        </mat-button-toggle-group>
+                                        <mat-form-field style="margin: auto 0; opacity: 0; width: 0">
+                                            <mat-select>
+                                            </mat-select>
+                                        </mat-form-field>
+                                        <mat-form-field *ngIf="(plugCable.coilBootAngle != null)"
+                                            style="margin: auto 0">
+                                            <mat-select [(ngModel)]="plugCable.coilBootID">
+                                                <mat-option
+                                                    *ngFor="let coilBoot of dictionaries.coilBoots.boots[plugCable.coilBootAngle]"
+                                                    [value]="coilBoot.ID">
+                                                    {{coilBoot.bootName}}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="fg">
+                                        <div style="margin: auto 0 auto auto">
+                                            <mat-button-toggle-group (change)="mergeBoot(plugCable, true)"
+                                                [(ngModel)]="plugCable.plugBootAngle" style="margin: auto 18px auto 0">
+                                                <mat-button-toggle
+                                                    *ngFor="let plugBootAngle of dictionaries.plugBoots.angles"
+                                                    [value]="plugBootAngle">
+                                                    {{(plugBootAngle + "°")}}
+                                                </mat-button-toggle>
+                                            </mat-button-toggle-group>
+                                            <mat-form-field style="margin: auto 0; opacity: 0; width: 0">
+                                                <mat-select>
+                                                </mat-select>
+                                            </mat-form-field>
+                                            <mat-form-field *ngIf="(plugCable.plugBootAngle != null)"
+                                                style="margin: auto 0">
+                                                <mat-select [(ngModel)]="plugCable.plugBootID">
+                                                    <mat-option
+                                                        *ngFor="let plugBoot of dictionaries.plugBoots.boots[plugCable.plugBootAngle]"
+                                                        [value]="plugBoot.ID">
+                                                        {{plugBoot.bootName}}
+                                                    </mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button (click)="copyCable(plugCable)" mat-raised-button
+                                style="color: #FFF; margin: auto 0 auto 18px"
+                                [style.background]="((_shellService.dealer 
+                                && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : 'red')">
+                                <mat-icon>content_copy</mat-icon>
+                            </button>
+                            <button (click)="copyCable(plugCable, true)" mat-raised-button
+                                *ngIf="(cableCounts.plug > 1)" style="color: #FFF; margin: auto 0 auto 8px"
+                                [style.background]="((_shellService.dealer  && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : 'red')">
+                                <mat-icon style="margin-right: 8px">content_copy</mat-icon>
+                                Copy To All
+                            </button>
+                            <mat-icon (click)="deleteCable(order.plugCables, i)"
+                                style="cursor: pointer; margin: auto 18px">
+                                delete</mat-icon>
+                        </div>
+                    </ng-container>
+                </div>
+                <button (click)="addCable()" mat-raised-button style="color: #FFF" [style.background]="((_shellService.dealer 
+        && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : 'red')">
+                    <mat-icon style=" margin-right: 8px">add</mat-icon>Add
+                </button>
+            </div>
+            <div style="margin-bottom: 18px">
+                <h2>COIL CABLES</h2>
+                <div class="fc">
+                    <ng-container *ngFor="let coilCable of order.coilCables, let i = index">
+                        <div class="fr" *ngIf="!coilCable.isDelete">
+                            <div class="fc fg" style="margin-bottom: 18px; max-width: 750px">
+                                <div class="fr" *ngIf="(coilCable.coilBootID && coilCable.plugBootID)">
+                                    <mat-form-field style="margin: 0 auto; width: 75px">
+                                        <input matInput [(ngModel)]="coilCable.cableLength" placeholder="Length (in)">
+                                    </mat-form-field>
+                                </div>
+                                <div class="fr">
+                                    <div class="fc" *ngIf="coilCable.coilBootID">
+                                        <div class="fr" *ngIf="(coilCable.coilBootID && coilCable.plugBootID)"
+                                            style="margin-bottom: 8px">
+                                            <div class="fg">
+                                            </div>
+                                            <div [ngStyle]="{'width': (((1 - dictionaries.coilBoots.bootIDs[coilCable.coilBootID].wireStartRatio) * 100) + '%')}"
+                                                style="background: #000; height: 3px">
+                                            </div>
+                                        </div>
+                                        <img [src]="('../../../assets/coilBoots/' + coilCable.coilBootID + '.jpg')"
+                                            style="height: 62.5px; margin: auto 0">
+                                    </div>
+                                    <div class="fc" *ngIf="order.cableTypeID" style="width: 100%">
+                                        <div *ngIf="(coilCable.coilBootID && coilCable.plugBootID)"
+                                            style="background: #000; height: 3px; margin-bottom: 8px; width: 100%">
+                                        </div>
+                                        <div [ngStyle]="{'background': dictionaries.cableTypes[order.cableTypeID].color,
+                    'height': ((dictionaries.cableTypes[order.cableTypeID].diameter * 1.75) + 'px')}"
+                                            style="margin: auto 0; width: 100%">
+                                        </div>
+                                    </div>
+                                    <div class="fc" *ngIf="coilCable.plugBootID">
+                                        <div class="fr" *ngIf="(coilCable.coilBootID && coilCable.plugBootID)"
+                                            style="margin-bottom: 8px">
+                                            <div [ngStyle]="{'width': (((1 - dictionaries.plugBoots.bootIDs[coilCable.plugBootID].wireStartRatio) * 100) + '%')}"
+                                                style="background: #000; height: 3px">
+                                            </div>
+                                        </div>
+                                        <img [src]="('../../../assets/plugBoots/' + coilCable.plugBootID + '.jpg')"
+                                            style="height: 62.5px; margin: auto 0; transform: scaleX(-1)">
+                                    </div>
+                                </div>
+                                <div class="fr" *ngIf="(coilCable.coilBootID || coilCable.plugBootID)"
+                                    style="margin-top: 8px">
+                                    <div class="fc fg">
+                                        <div class="fc" *ngIf="coilCable.coilBootID" style="margin: auto auto auto 0">
+                                            <img [src]="('../../../assets/terminals/' + dictionaries.coilBoots.bootIDs[coilCable.coilBootID].terminalID + '.jpg')"
+                                                style="height: 50px">
+                                        </div>
+                                    </div>
+                                    <div class="fc fg">
+                                        <div class="fc" *ngIf="coilCable.plugBootID" style="margin: auto 0 auto auto">
+                                            <img [src]="('../../../assets/terminals/' + dictionaries.plugBoots.bootIDs[coilCable.plugBootID].terminalID + '.jpg')"
+                                                style="height: 50px">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="fr">
+                                    <div class="fg">
+                                        <mat-button-toggle-group (change)="mergeBoot(coilCable, false, true)"
+                                            [(ngModel)]="coilCable.coilBootAngle" style="margin: auto 18px auto 0">
+                                            <mat-button-toggle
+                                                *ngFor="let coilBootAngle of dictionaries.coilCables.coilBoots[order.coilPackTypeID].angles"
+                                                [value]="coilBootAngle">
+                                                {{(coilBootAngle + "°")}}
+                                            </mat-button-toggle>
+                                        </mat-button-toggle-group>
+                                        <mat-form-field style="margin: auto 0; opacity: 0; width: 0">
+                                            <mat-select>
+                                            </mat-select>
+                                        </mat-form-field>
+                                        <mat-form-field *ngIf="(coilCable.coilBootAngle != null)"
+                                            style="margin: auto 0">
+                                            <mat-select [(ngModel)]="coilCable.coilBootID">
+                                                <mat-option
+                                                    *ngFor="let coilBoot of dictionaries.coilCables.coilBoots[order.coilPackTypeID].boots[coilCable.coilBootAngle]"
+                                                    [value]="coilBoot.ID">
+                                                    {{coilBoot.bootName}}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="fg">
+                                        <div style="margin: auto 0 auto auto">
+                                            <mat-button-toggle-group (change)="mergeBoot(coilCable, true, true)"
+                                                [(ngModel)]="coilCable.plugBootAngle" style="margin: auto 18px auto 0">
+                                                <mat-button-toggle
+                                                    *ngFor="let plugBootAngle of dictionaries.coilCables.plugBoots.angles"
+                                                    [value]="plugBootAngle">
+                                                    {{(plugBootAngle + "°")}}
+                                                </mat-button-toggle>
+                                            </mat-button-toggle-group>
+                                            <mat-form-field style="margin: auto 0; opacity: 0; width: 0">
+                                                <mat-select>
+                                                </mat-select>
+                                            </mat-form-field>
+                                            <mat-form-field *ngIf="(coilCable.plugBootAngle != null)"
+                                                style="margin: auto 0">
+                                                <mat-select [(ngModel)]="coilCable.plugBootID">
+                                                    <mat-option
+                                                        *ngFor="let plugBoot of dictionaries.coilCables.plugBoots.boots[coilCable.plugBootAngle]"
+                                                        [value]="plugBoot.ID">
+                                                        {{plugBoot.bootName}}
+                                                    </mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button (click)="copyCable(coilCable, false, true)" mat-raised-button
+                                style="color: #FFF; margin: auto 0 auto 18px"
+                                [style.background]="((_shellService.dealer 
+                                && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : 'red')">
+                                <mat-icon>content_copy</mat-icon>
+                            </button>
+                            <button (click)="copyCable(coilCable, true, true)" mat-raised-button
+                                *ngIf="(cableCounts.coil > 1)" style="color: #FFF; margin: auto 0 auto 8px"
+                                [style.background]="((_shellService.dealer && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : 'red')">
+                                <mat-icon style="margin-right: 8px">content_copy</mat-icon>
+                                Copy To All
+                            </button>
+                            <mat-icon (click)="deleteCable(order.coilCables, i)"
+                                style="cursor: pointer; margin: auto 18px">
+                                delete</mat-icon>
+                        </div>
+                    </ng-container>
+                </div>
+                <button (click)="addCable(true)" mat-raised-button *ngIf="(order.coilCables.length < 2)"
+                    style="color: #FFF" [style.background]="((_shellService.dealer 
+        && _shellService.dealer.foregroundColor) ? _shellService.dealer.foregroundColor : 'red')">
+                    <mat-icon style="margin-right: 8px">add</mat-icon>Add
+                </button>
+            </div>
+            <div class="fr" *ngIf="order.ID" style="width: 100%">
+                <button (click)="saveOrder(false, true)" color="warn" mat-raised-button
+                    style="margin: 32px auto 18px auto">
+                    <mat-icon style="margin-right: 8px">delete</mat-icon>Delete Order
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- <button mat-fab style="bottom: 38px; height: 125px; position: absolute; right: 38px; width: 125px; z-index: 1">
+    <mat-icon>arrow_downward</mat-icon>
+</button> -->

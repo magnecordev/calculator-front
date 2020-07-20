@@ -3,7 +3,7 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  middlewareURI: "http://localhost:9000/",
+  middlewareURI: "https://magnecorpc-middle.herokuapp.com/",
   production: false
 };
 
